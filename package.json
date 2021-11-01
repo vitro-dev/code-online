@@ -1,22 +1,46 @@
 {
-  "name": "code-online",
+  "name": "code.imvitro.ml",
   "version": "0.0.0",
+  "private": true,
   "scripts": {
-    "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "co": "sui-mono commit",
+    "cypress": "cypress open",
+    "dev": "vite",
+    "lint": "standard",
+    "phoenix": "rm -rf ./node_modules && npm install",
+    "postinstall": "git config core.hooksPath ./git-hooks",
+    "serve": "vite preview",
+    "test:e2e": "npx cypress run"
   },
   "devDependencies": {
-    "standard": "^16.0.4",
-    "vite": "^2.6.4"
+    "@s-ui/mono": "2",
+    "postcss-nesting": "8.0.1",
+    "standard": "16.0.4",
+    "vite": "2.6.7",
+    "cypress": "8.6.0"
   },
   "dependencies": {
-    "js-base64": "^3.7.2",
-    "split-grid": "^1.0.11"
+    "css-format-monaco": "2.0.4",
+    "emmet-monaco-es": "4.7.4",
+    "escape-html": "1.0.3",
+    "hotkeys-js": "3.8.7",
+    "js-base64": "3.7.2",
+    "jszip": "3.7.1",
+    "lit": "2.0.2",
+    "mitt": "3.0.0",
+    "monaco-editor": "0.29.1",
+    "split-grid": "1.0.11",
+    "zustand": "3.5.13"
   },
   "eslintConfig": {
     "extends": [
       "./node_modules/standard/eslintrc.json"
     ]
+  },
+  "postcss": {
+    "plugins": {
+      "postcss-nesting": {}
+    }
   }
 }

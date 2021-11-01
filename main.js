@@ -1,61 +1,86 @@
 import './style.css'
 import Split from 'split-grid'
 import { encode, decode } from 'js-base64'
+import * as monaco from 'monaco-editor'
+import HtmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker'
+import CssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker'
+import JsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker'
+
+window.MonacoEnviroment = {
+  getWorker(_, label) {
+    if (label == 'html') return new HtmlWorker()
+    if (label == 'css') return new CssWorker()
+    if (label == 'javascript') return new JsWorker()
+  }
+}
 
 const $ = selector => document.querySelector(selector)
 
 Split({
-	columnGutters: [{
+  columnGutters: [{
     track: 1,
     element: document.querySelector('.vertical-gutter'),
   }],
   rowGutters: [{
-  	track: 1,
+    track: 1,
     element: document.querySelector('.horizontal-gutter'),
   }]
 })
-
-console.log('main!')
 
 const $js = $('#js')
 const $css = $('#css')
 const $html = $('#html')
 
-$js.addEventListener('input', update)
-$css.addEventListener('input', update)
-$html.addEventListener('input', update)
+const { pathname } = window.location
+const [rawHtml, rawCss, rawJs] = pathname.slice(1).split('%7C')
 
-function init () {
-  const { pathname } = window.location
-  const [rawHtml, rawCss, rawJs] = pathname.slice(1).split('%7C')
+const html = decode(rawHtml)
+const js = decode(rawJs)
+const css = decode(rawCss)
 
-  const html = decode(rawHtml)
-  const js = decode(rawJs)
-  const css = decode(rawCss)
+const htmlEditor = monaco.editor.create($html, {
+  value: html,
+  language: 'html',
+  theme: 'vs-dark',
+  fontSize: 18
+})
 
-  $html.value = html
-  $css.value = css
-  $js.value = js
+const cssEditor = monaco.editor.create($css, {
+  value: css,
+  language: 'css',
+  theme: 'vs-dark',
+  fontSize: 18
+})
 
-  const htmlForPreview = createHtml({html, js, css})
-  $('iframe').setAttribute('srcdoc', htmlForPreview)
+const jsEditor = monaco.editor.create($js, {
+  value: js,
+  language: 'javascript',
+  theme: 'vs-dark',
+  fontSize: 18
+})
 
-}
+htmlEditor.onDidChangeModelContent(update)
+cssEditor.onDidChangeModelContent(update)
+jsEditor.onDidChangeModelContent(update)
+
+const htmlForPreview = createHtml({ html, js, css })
+$('iframe').setAttribute('srcdoc', htmlForPreview)
+
 
 function update() {
-  const html = $html.value
-  const css = $css.value
-  const js = $js.value
+  const html = htmlEditor.getValue()
+  const css = cssEditor.getValue()
+  const js = jsEditor.getValue()
 
-  const hashedCode = `${encode(html)}|${window.btoa(css)}|${window.btoa(js)}` 
+  const hashedCode = `${encode(html)}|${window.btoa(css)}|${window.btoa(js)}`
 
   window.history.replaceState(null, null, `/${hashedCode}`)
 
-  const htmlForPreview = createHtml({html, js, css})
+  const htmlForPreview = createHtml({ html, js, css })
   $('iframe').setAttribute('srcdoc', htmlForPreview)
 }
 
-const createHtml = ({html, js, css}) => {
+function createHtml ({ html, js, css }) {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -73,5 +98,3 @@ const createHtml = ({html, js, css}) => {
 </html>
   `
 }
-
-init()
